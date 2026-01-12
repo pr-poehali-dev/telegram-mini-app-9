@@ -24,9 +24,7 @@ export const HomePage = ({
       <Card className="glass border-0 p-6 space-y-6">
         <div className="text-center space-y-2">
           <div className="text-sm text-muted-foreground">Баланс</div>
-          <div className="text-5xl font-bold gradient-purple bg-clip-text text-transparent">
-            ₽{balance.toLocaleString()}
-          </div>
+          <div className="text-5xl font-bold gradient-purple text-transparent bg-slate-300">0</div>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
