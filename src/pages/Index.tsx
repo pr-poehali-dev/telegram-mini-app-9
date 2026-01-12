@@ -16,6 +16,7 @@ import { WalletPage } from '@/components/WalletPage';
 import { BonusPage, PartnersPage } from '@/components/BonusPartnersPages';
 import { useRobokassa, openPaymentPage } from '@/components/extensions/robokassa/useRobokassa';
 import { useToast } from '@/hooks/use-toast';
+import { useTelegram } from '@/lib/telegram';
 
 type Page = 'home' | 'portfolio' | 'wallet' | 'bonus' | 'partners';
 
@@ -28,6 +29,7 @@ const Index = () => {
   const [operations, setOperations] = useState<Array<{ type: string; amount: number; date: string }>>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const { toast } = useToast();
+  const { user, isReady } = useTelegram();
 
   const { createPayment, isLoading } = useRobokassa({
     apiUrl: 'https://functions.poehali.dev/d44905e6-9c67-483c-9afb-6d1cfeaa6bc9',
@@ -107,8 +109,8 @@ const Index = () => {
     try {
       const response = await createPayment({
         amount,
-        userName: 'Пользователь',
-        userEmail: 'user@example.com',
+        userName: user?.firstName || 'Пользователь',
+        userEmail: user?.username ? `${user.username}@telegram.user` : 'user@example.com',
         userPhone: '+79999999999',
         cartItems: [
           {
@@ -175,6 +177,16 @@ const Index = () => {
       />
     ),
   };
+
+  if (!isReady) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-lg">Загрузка...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-safe">
