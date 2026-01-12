@@ -1,4 +1,5 @@
 {
+  "get-orders": "https://functions.poehali.dev/4ec1674a-10d5-47ce-8fac-98df07bbdf5a",
   "robokassa-robokassa-webhook": "https://functions.poehali.dev/cdafe62c-b880-4056-8be1-013dc388af62",
   "robokassa-robokassa": "https://functions.poehali.dev/d44905e6-9c67-483c-9afb-6d1cfeaa6bc9",
   "telegram-bot-telegram-auth": "https://functions.poehali.dev/77a9cc55-d3ba-4e67-8912-2448ef99d544",

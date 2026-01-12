@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +25,8 @@ const Index = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<'crypto' | 'sbp' | null>(null);
   const [depositAmount, setDepositAmount] = useState<string>('');
+  const [operations, setOperations] = useState<Array<{ type: string; amount: number; date: string }>>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const { toast } = useToast();
 
   const { createPayment, isLoading } = useRobokassa({
@@ -61,11 +63,28 @@ const Index = () => {
     { name: 'Премиум', amount: 100000, daily: 2500, progress: 25 },
   ];
 
-  const operations = [
-    { type: 'deposit', amount: 25000, date: '10.01.2026' },
-    { type: 'profit', amount: 2450, date: '10.01.2026' },
-    { type: 'withdrawal', amount: 10000, date: '09.01.2026' },
-  ];
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch('https://functions.poehali.dev/4ec1674a-10d5-47ce-8fac-98df07bbdf5a');
+        if (!response.ok) throw new Error('Failed to fetch orders');
+        
+        const data = await response.json();
+        setOperations(data.orders || []);
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        setOperations([
+          { type: 'deposit', amount: 25000, date: '10.01.2026' },
+          { type: 'profit', amount: 2450, date: '10.01.2026' },
+          { type: 'withdrawal', amount: 10000, date: '09.01.2026' },
+        ]);
+      } finally {
+        setIsLoadingOrders(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
 
   const handleTaskComplete = (taskId: string, reward: number) => {
     if (!completedTasks.includes(taskId)) {
@@ -107,6 +126,14 @@ const Index = () => {
       setIsDepositOpen(false);
       setSelectedMethod(null);
       setDepositAmount('');
+      
+      setTimeout(async () => {
+        const ordersResponse = await fetch('https://functions.poehali.dev/4ec1674a-10d5-47ce-8fac-98df07bbdf5a');
+        if (ordersResponse.ok) {
+          const data = await ordersResponse.json();
+          setOperations(data.orders || []);
+        }
+      }, 2000);
     } catch (error) {
       console.error('Payment error:', error);
     }
