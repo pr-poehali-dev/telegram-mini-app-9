@@ -63,13 +63,33 @@ interface PartnersPageProps {
   referralIncome: number;
   totalPartners: number;
   activePartners: number;
+  referralCode: string;
+  referrals: Array<{ name: string; joined_at: string; is_active: boolean }>;
+  webApp: any;
 }
 
 export const PartnersPage = ({
   referralIncome,
   totalPartners,
   activePartners,
+  referralCode,
+  referrals,
+  webApp,
 }: PartnersPageProps) => {
+  const referralUrl = referralCode 
+    ? `https://t.me/YOUR_BOT_USERNAME?start=${referralCode}`
+    : 'https://invest.app/ref/USER123';
+  
+  const handleShare = () => {
+    if (webApp) {
+      const shareText = `🚀 Присоединяйся к инвестиционной платформе!\n\n💰 Получи бонус при регистрации\n📈 Доход до 25% годовых\n\n👉 ${referralUrl}`;
+      webApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent(shareText)}`);
+    }
+  };
+  
+  const handleCopy = () => {
+    navigator.clipboard.writeText(referralUrl);
+  };
   return (
     <div className="space-y-4 pb-24">
       <div>
@@ -88,14 +108,24 @@ export const PartnersPage = ({
         <div className="text-base font-semibold">Индивидуальная ссылка</div>
         <div className="flex gap-2">
           <Input
-            value="https://invest.app/ref/USER123"
+            value={referralUrl}
             readOnly
             className="bg-background/50 border-border"
           />
-          <Button className="gradient-purple hover:opacity-90 transition-opacity px-6">
+          <Button 
+            onClick={handleCopy}
+            className="gradient-purple hover:opacity-90 transition-opacity px-6"
+          >
             <Icon name="Copy" size={18} />
           </Button>
         </div>
+        <Button 
+          onClick={handleShare}
+          className="w-full gradient-blue hover:opacity-90 transition-opacity"
+        >
+          <Icon name="Share2" className="mr-2" size={18} />
+          Поделиться в Telegram
+        </Button>
       </Card>
 
       <div className="grid grid-cols-3 gap-3">
@@ -123,36 +153,42 @@ export const PartnersPage = ({
           prefix={<Icon name="Search" size={18} />}
         />
 
-        {[
-          { name: 'Алексей М.', income: 3240, status: 'active' },
-          { name: 'Мария К.', income: 2890, status: 'active' },
-          { name: 'Иван П.', income: 0, status: 'inactive' },
-        ].map((partner, idx) => (
-          <Card key={idx} className="glass border-0 p-4 flex items-center justify-between hover-scale">
-            <div className="flex items-center gap-3">
+        {referrals.length > 0 ? (
+          referrals.map((partner, idx) => (
+            <Card key={idx} className="glass border-0 p-4 flex items-center justify-between hover-scale">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    partner.is_active ? 'gradient-purple' : 'bg-muted'
+                  }`}
+                >
+                  <Icon name="User" size={18} />
+                </div>
+                <div>
+                  <div className="font-medium">{partner.name}</div>
+                  <div className="text-xs text-muted-foreground">{partner.joined_at}</div>
+                </div>
+              </div>
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  partner.status === 'active' ? 'gradient-purple' : 'bg-muted'
+                className={`text-xs px-3 py-1 rounded-full ${
+                  partner.is_active
+                    ? 'bg-green-500/20 text-green-400'
+                    : 'bg-muted text-muted-foreground'
                 }`}
               >
-                <Icon name="User" size={18} />
+                {partner.is_active ? 'Активен' : 'Неактивен'}
               </div>
-              <div>
-                <div className="font-medium">{partner.name}</div>
-                <div className="text-sm text-green-400">+₽{partner.income.toLocaleString()}</div>
-              </div>
-            </div>
-            <div
-              className={`text-xs px-3 py-1 rounded-full ${
-                partner.status === 'active'
-                  ? 'bg-green-500/20 text-green-400'
-                  : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {partner.status === 'active' ? 'Активен' : 'Неактивен'}
+            </Card>
+          ))
+        ) : (
+          <Card className="glass border-0 p-8 text-center">
+            <Icon name="Users" className="mx-auto text-muted-foreground mb-4" size={48} />
+            <div className="text-lg font-semibold mb-2">Пока нет рефералов</div>
+            <div className="text-sm text-muted-foreground">
+              Поделитесь своей ссылкой, чтобы пригласить друзей
             </div>
           </Card>
-        ))}
+        )}
       </div>
     </div>
   );

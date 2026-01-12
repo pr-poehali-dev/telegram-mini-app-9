@@ -29,7 +29,18 @@ const Index = () => {
   const [operations, setOperations] = useState<Array<{ type: string; amount: number; date: string }>>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const { toast } = useToast();
-  const { user, isReady } = useTelegram();
+  const { user, isReady, webApp } = useTelegram();
+  const [userData, setUserData] = useState<{
+    userId: number;
+    referralCode: string;
+    balance: number;
+    referralEarnings: number;
+  } | null>(null);
+  const [referralStats, setReferralStats] = useState<{
+    totalReferrals: number;
+    activeReferrals: number;
+    referrals: Array<{ name: string; joined_at: string; is_active: boolean }>;
+  }>({ totalReferrals: 0, activeReferrals: 0, referrals: [] });
 
   const { createPayment, isLoading } = useRobokassa({
     apiUrl: 'https://functions.poehali.dev/d44905e6-9c67-483c-9afb-6d1cfeaa6bc9',
@@ -66,6 +77,49 @@ const Index = () => {
   ];
 
   useEffect(() => {
+    const registerUser = async () => {
+      if (!user) return;
+      
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refCode = urlParams.get('ref') || webApp?.initDataUnsafe?.start_param;
+        
+        const response = await fetch('https://functions.poehali.dev/7511f639-cf3e-46f1-9c1f-7c14ed5d8f50?action=register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            telegram_id: user.id,
+            first_name: user.firstName,
+            last_name: user.lastName,
+            username: user.username,
+            referral_code: refCode
+          })
+        });
+        
+        if (!response.ok) throw new Error('Registration failed');
+        
+        const data = await response.json();
+        setUserData({
+          userId: data.user_id,
+          referralCode: data.referral_code,
+          balance: data.balance,
+          referralEarnings: data.referral_earnings
+        });
+        
+        const statsResponse = await fetch(`https://functions.poehali.dev/7511f639-cf3e-46f1-9c1f-7c14ed5d8f50?action=stats&user_id=${data.user_id}`);
+        if (statsResponse.ok) {
+          const stats = await statsResponse.json();
+          setReferralStats({
+            totalReferrals: stats.total_referrals,
+            activeReferrals: stats.active_referrals,
+            referrals: stats.referrals
+          });
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+      }
+    };
+    
     const fetchOrders = async () => {
       try {
         const response = await fetch('https://functions.poehali.dev/4ec1674a-10d5-47ce-8fac-98df07bbdf5a');
@@ -85,8 +139,11 @@ const Index = () => {
       }
     };
 
+    if (user) {
+      registerUser();
+    }
     fetchOrders();
-  }, []);
+  }, [user, webApp]);
 
   const handleTaskComplete = (taskId: string, reward: number) => {
     if (!completedTasks.includes(taskId)) {
@@ -171,9 +228,12 @@ const Index = () => {
     ),
     partners: (
       <PartnersPage
-        referralIncome={referralIncome}
-        totalPartners={totalPartners}
-        activePartners={activePartners}
+        referralIncome={userData?.referralEarnings || referralIncome}
+        totalPartners={referralStats.totalReferrals || totalPartners}
+        activePartners={referralStats.activeReferrals || activePartners}
+        referralCode={userData?.referralCode || ''}
+        referrals={referralStats.referrals}
+        webApp={webApp}
       />
     ),
   };

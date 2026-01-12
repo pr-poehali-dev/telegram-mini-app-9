@@ -1,0 +1,32 @@
+{
+  "tests": [
+    {
+      "name": "Register new user",
+      "method": "POST",
+      "path": "/?action=register",
+      "body": {
+        "telegram_id": "123456789",
+        "first_name": "John",
+        "last_name": "Doe",
+        "username": "johndoe"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "user_id": "number",
+        "referral_code": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get referral stats",
+      "method": "GET",
+      "path": "/?action=stats&user_id=1",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "total_referrals": "number",
+        "active_referrals": "number"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
