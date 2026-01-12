@@ -4,12 +4,21 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 type Page = 'home' | 'portfolio' | 'wallet' | 'bonus' | 'partners';
 
 const Index = () => {
   const [activePage, setActivePage] = useState<Page>('home');
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
+  const [isDepositOpen, setIsDepositOpen] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<'crypto' | 'sbp' | null>(null);
 
   const balance = 125000;
   const profit24h = 2450;
@@ -74,7 +83,7 @@ const Index = () => {
         </div>
       </Card>
 
-      <Button className="w-full gradient-purple hover:opacity-90 transition-opacity h-14 text-lg font-semibold">
+      <Button onClick={() => setIsDepositOpen(true)} className="w-full gradient-purple hover:opacity-90 transition-opacity h-14 text-lg font-semibold">
         <Icon name="Plus" className="mr-2" size={20} />
         Пополнить баланс
       </Button>
@@ -227,7 +236,7 @@ const Index = () => {
       </Card>
 
       <div className="grid grid-cols-2 gap-3">
-        <Button className="gradient-blue hover:opacity-90 transition-opacity h-14 text-base font-semibold">
+        <Button onClick={() => setIsDepositOpen(true)} className="gradient-blue hover:opacity-90 transition-opacity h-14 text-base font-semibold">
           <Icon name="Plus" className="mr-2" size={18} />
           Пополнить
         </Button>
@@ -427,6 +436,75 @@ const Index = () => {
     <div className="min-h-screen bg-background pb-safe">
       <div className="max-w-md mx-auto relative">
         <div className="p-6">{pages[activePage]()}</div>
+
+        <Dialog open={isDepositOpen} onOpenChange={setIsDepositOpen}>
+          <DialogContent className="glass border-border max-w-[400px]">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold">Пополнить баланс</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
+                Выберите удобный способ пополнения
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3 mt-4">
+              <Card
+                className={`glass border-0 p-5 cursor-pointer hover-scale transition-all ${
+                  selectedMethod === 'crypto' ? 'ring-2 ring-primary' : ''
+                }`}
+                onClick={() => setSelectedMethod('crypto')}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 gradient-blue rounded-full flex items-center justify-center">
+                    <Icon name="Bitcoin" size={28} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-lg font-semibold">Криптокошелек</div>
+                    <div className="text-sm text-muted-foreground">USDT, BTC, ETH</div>
+                  </div>
+                  {selectedMethod === 'crypto' && (
+                    <Icon name="CheckCircle" className="text-primary" size={24} />
+                  )}
+                </div>
+              </Card>
+
+              <Card
+                className={`glass border-0 p-5 cursor-pointer hover-scale transition-all ${
+                  selectedMethod === 'sbp' ? 'ring-2 ring-primary' : ''
+                }`}
+                onClick={() => setSelectedMethod('sbp')}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 gradient-purple rounded-full flex items-center justify-center">
+                    <Icon name="Smartphone" size={28} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-lg font-semibold">СБП</div>
+                    <div className="text-sm text-muted-foreground">Система быстрых платежей</div>
+                  </div>
+                  {selectedMethod === 'sbp' && (
+                    <Icon name="CheckCircle" className="text-primary" size={24} />
+                  )}
+                </div>
+              </Card>
+            </div>
+
+            {selectedMethod && (
+              <div className="mt-6 space-y-4 animate-fade-in">
+                <div>
+                  <label className="text-sm text-muted-foreground mb-2 block">Сумма пополнения</label>
+                  <Input
+                    type="number"
+                    placeholder="1000"
+                    className="bg-background/50 border-border h-12 text-lg"
+                  />
+                </div>
+                <Button className="w-full gradient-purple hover:opacity-90 transition-opacity h-12 text-base font-semibold">
+                  Продолжить
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         <div className="fixed bottom-0 left-0 right-0 glass border-t border-border">
           <div className="max-w-md mx-auto px-4 py-3">
