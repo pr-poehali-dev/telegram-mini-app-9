@@ -14,6 +14,8 @@ import { HomePage } from '@/components/HomePage';
 import { PortfolioPage } from '@/components/PortfolioPage';
 import { WalletPage } from '@/components/WalletPage';
 import { BonusPage, PartnersPage } from '@/components/BonusPartnersPages';
+import { useRobokassa, openPaymentPage } from '@/components/extensions/robokassa/useRobokassa';
+import { useToast } from '@/hooks/use-toast';
 
 type Page = 'home' | 'portfolio' | 'wallet' | 'bonus' | 'partners';
 
@@ -22,6 +24,19 @@ const Index = () => {
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<'crypto' | 'sbp' | null>(null);
+  const [depositAmount, setDepositAmount] = useState<string>('');
+  const { toast } = useToast();
+
+  const { createPayment, isLoading } = useRobokassa({
+    apiUrl: 'https://functions.poehali.dev/d44905e6-9c67-483c-9afb-6d1cfeaa6bc9',
+    onError: (error) => {
+      toast({
+        title: 'Ошибка',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
 
   const balance = 125000;
   const profit24h = 2450;
@@ -55,6 +70,45 @@ const Index = () => {
   const handleTaskComplete = (taskId: string, reward: number) => {
     if (!completedTasks.includes(taskId)) {
       setCompletedTasks([...completedTasks, taskId]);
+    }
+  };
+
+  const handlePayment = async () => {
+    const amount = parseFloat(depositAmount);
+    
+    if (!amount || amount < 100) {
+      toast({
+        title: 'Ошибка',
+        description: 'Минимальная сумма пополнения — 100 ₽',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const response = await createPayment({
+        amount,
+        userName: 'Пользователь',
+        userEmail: 'user@example.com',
+        userPhone: '+79999999999',
+        cartItems: [
+          {
+            id: 'deposit',
+            name: 'Пополнение баланса',
+            price: amount,
+            quantity: 1,
+          },
+        ],
+        successUrl: window.location.origin + '/?payment=success',
+        failUrl: window.location.origin + '/?payment=fail',
+      });
+
+      openPaymentPage(response.payment_url);
+      setIsDepositOpen(false);
+      setSelectedMethod(null);
+      setDepositAmount('');
+    } catch (error) {
+      console.error('Payment error:', error);
     }
   };
 
@@ -160,11 +214,17 @@ const Index = () => {
                   <Input
                     type="number"
                     placeholder="1000"
+                    value={depositAmount}
+                    onChange={(e) => setDepositAmount(e.target.value)}
                     className="bg-background/50 border-border h-12 text-lg"
                   />
                 </div>
-                <Button className="w-full gradient-purple hover:opacity-90 transition-opacity h-12 text-base font-semibold">
-                  Продолжить
+                <Button
+                  onClick={handlePayment}
+                  disabled={isLoading}
+                  className="w-full gradient-purple hover:opacity-90 transition-opacity h-12 text-base font-semibold"
+                >
+                  {isLoading ? 'Загрузка...' : 'Продолжить'}
                 </Button>
               </div>
             )}
