@@ -53,9 +53,9 @@ const Index = () => {
     },
   });
 
-  const balance = 125000;
+  const balance = userData?.balance || 125000;
   const profit24h = 2450;
-  const partnersCount = 48;
+  const partnersCount = referralStats.totalReferrals || 48;
   const withdrawn = 85000;
   const portfolioTotal = 125000;
   const dailyIncome = 2450;

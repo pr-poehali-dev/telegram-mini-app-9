@@ -17,7 +17,35 @@ export const BonusPage = ({ tasks, completedTasks, onTaskComplete }: BonusPagePr
         <p className="text-sm text-muted-foreground mt-1">Выполняй задания — получай деньги</p>
       </div>
 
+      <Card className="glass border-0 p-6 space-y-4">
+        <div className="text-base font-semibold">Реферальная программа</div>
+        <div className="space-y-3 text-sm">
+          <div className="flex items-center justify-between p-3 bg-background/30 rounded-lg">
+            <div className="flex items-center gap-3">
+              <Icon name="UserPlus" className="text-green-400" size={20} />
+              <span>За регистрацию реферала</span>
+            </div>
+            <span className="font-bold text-green-400">+₽100</span>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-background/30 rounded-lg">
+            <div className="flex items-center gap-3">
+              <Icon name="DollarSign" className="text-yellow-400" size={20} />
+              <span>За первый депозит реферала</span>
+            </div>
+            <span className="font-bold text-green-400">+₽500</span>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-background/30 rounded-lg">
+            <div className="flex items-center gap-3">
+              <Icon name="Percent" className="text-purple-400" size={20} />
+              <span>С каждого пополнения</span>
+            </div>
+            <span className="font-bold text-green-400">5%</span>
+          </div>
+        </div>
+      </Card>
+
       <div className="space-y-3">
+        <h3 className="text-lg font-semibold">Задания</h3>
         {tasks.map((task) => {
           const isCompleted = completedTasks.includes(task.id);
           return (
@@ -146,7 +174,26 @@ export const PartnersPage = ({
         </Card>
       </div>
 
+      <Card className="glass border-0 p-5 space-y-3">
+        <div className="text-base font-semibold">Как работает программа</div>
+        <div className="space-y-2 text-sm text-muted-foreground">
+          <div className="flex items-start gap-2">
+            <Icon name="Gift" className="text-green-400 mt-0.5" size={16} />
+            <span><strong className="text-foreground">₽100</strong> — бонус за регистрацию каждого реферала</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <Icon name="Coins" className="text-yellow-400 mt-0.5" size={16} />
+            <span><strong className="text-foreground">₽500</strong> — бонус за первый депозит реферала</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <Icon name="TrendingUp" className="text-purple-400 mt-0.5" size={16} />
+            <span><strong className="text-foreground">5%</strong> — комиссия с каждого пополнения реферала</span>
+          </div>
+        </div>
+      </Card>
+
       <div className="space-y-3">
+        <div className="text-lg font-semibold">Ваши рефералы</div>
         <Input
           placeholder="Поиск по имени"
           className="bg-background/50 border-border h-12"

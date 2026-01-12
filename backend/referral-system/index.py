@@ -97,6 +97,30 @@ def handler(event: dict, context) -> dict:
                 (unique_code, new_user_id)
             )
             
+            if referred_by_id:
+                cur.execute(
+                    'SELECT bonus_amount FROM t_p49988359_telegram_mini_app_9.bonus_settings WHERE bonus_type = %s AND is_active = true',
+                    ('referral_signup',)
+                )
+                bonus_result = cur.fetchone()
+                
+                if bonus_result:
+                    signup_bonus = bonus_result[0]
+                    
+                    cur.execute(
+                        '''UPDATE t_p49988359_telegram_mini_app_9.users 
+                           SET balance = balance + %s, referral_earnings = referral_earnings + %s 
+                           WHERE id = %s''',
+                        (signup_bonus, signup_bonus, referred_by_id)
+                    )
+                    
+                    cur.execute(
+                        '''INSERT INTO t_p49988359_telegram_mini_app_9.referral_earnings 
+                           (user_id, referral_id, amount, bonus_type, description, created_at) 
+                           VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)''',
+                        (referred_by_id, new_user_id, signup_bonus, 'referral_signup', 'Бонус за регистрацию реферала')
+                    )
+            
             conn.commit()
             cur.close()
             conn.close()
